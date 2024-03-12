@@ -43,40 +43,100 @@ def learn_more():
         Monthly_Balance              True
         Credit_Score                False  """
 
-def credit_score_input(df, index):
+def credit_score_input(index):
     #User Input with button 
-    input = None
     submit_button = None
     invalid = False
 
-    if df is None:
-        df = []  # Initialize df as an empty list if None
-
     with st.form(key='my_form'):
-        st.write("Question " + str(index) + "/16")
-
-        if index == 1:
-            input = st.number_input("What is your age?")
-            submit_button = st.form_submit_button(label='Submit')
-            invalid = input < 16 or input > 100
-            errorMsg = "Please enter a valid age between 16 and 100"
-
-        if submit_button:
-            if invalid:
-                st.error(errorMsg)
-            else:
-                df.append({'Age': input})
-                return df
-
+        st.write("Please enter the following information:")
+        st.write("Age: ")
+        age = st.number_input("Enter your age", min_value=0, max_value=100, value=None)
         
+        st.write("\n")
+        st.write("Annual Income: ")
+        annual_income = st.number_input("Enter your annual income", min_value=0, max_value=1000000, value=None)
+        
+        st.write("\n")
+        st.write("Monthly Inhand Salary: ")
+        monthly_inhand_salary = st.number_input("Enter your monthly inhand salary", min_value=0, max_value=100000, value=None)
+        
+        st.write("\n")
+        st.write("Number of Bank Accounts: ")
+        num_BA = st.number_input("Enter the number of bank accounts you have", min_value=0, max_value=15, value=None)
 
+        st.write("\n")
+        st.write("Number of Credit Cards: ")
+        num_CC = st.number_input("Enter the number of credit cards you have", min_value=0, max_value=10, value=None)
+        
+        st.write("\n")
+        st.write("Interest Rate: ") 
+        interest_rate = st.number_input("Enter your average interest rate", min_value=0, max_value=100, value=None)
+        
+        st.write("\n")
+        st.write("Number of Loans: ")
+        num_loans = st.number_input("Enter the number of loans you have", min_value=0, max_value=10, value=None)
+        
+        st.write("\n")
+        st.write("Type of Loan: ")
+        options = 'Choose an Option', 'Student Loan', 'Equity Loan', 'Payday Loan', 'Personal Loan', 'Consolidation Loan', 'Mortgage Loan', 'Auto Loan', 'Builder Loan'
+        loan_types = st.multiselect("Select the type of loan you have, if applicable", options)
 
-            
+        st.write("\n")
+        st.write("Number of Delayed Payments: ")
+        num_delayed_payments = st.number_input("Enter the number of delayed payments", min_value=0, max_value=10, value=None)
+        
+        st.write("\n")
+        st.write("Number of Credit Inquiries: ")
+        num_cred_inquires = st.number_input("Enter the number of credit inquiries", min_value=0, max_value=10, value=None)
+        
+        st.write("\n")
+        st.write("Outstanding Debt: ")
+        debt = st.number_input("Enter the outstanding debt", min_value=0, max_value=1000000, value=None)
+        
+        st.write("\n")
+        st.write("Credit Utilization Ratio: ")
+        cred_util = st.number_input("Enter the credit utilization ratio. For example, for 30% enter 30", min_value=0, max_value=100, value=None)
+        
+        st.write("\n")
+        st.write("Credit History Age: ")
+        cred_age = st.number_input("Enter the credit history age", min_value=0, max_value=100, value=None)
+        
+        st.write("\n")
+        st.write("Total EMI per month: ")
+        emi = st.number_input("Enter the total EMI per month", min_value=0, max_value=100000, value=None)
+        
+        st.write("\n")
+        st.write("Payment Behaviour: ")
 
+        payment_behavior = st.selectbox("Enter the payment behaviour that best fits you", ('High Spending and Large Value Payments', 'High Spending and Medium Value Payments', 
+                'High Spending and Small Value Payments', 'Low Spending and Large Value Payments', 'Low Spending and Medium Value Payments', 'Low Spending and Small Value Payments'))
+        
+        st.write("\n")
+        st.write("Monthly Balance: ")
+        monthly_balance = st.number_input("Enter the monthly balance", min_value=0, max_value=100000, value=None)
+        
+        st.write("\n")
+        st.write("\n")
+        submit_button = st.form_submit_button(label='Submit')
 
+    if submit_button: 
+        st.session_state.data[0] = {'Age': age, 'Annual_Income': annual_income, 'Monthly_Inhand_Salary': monthly_inhand_salary, 'Num_Bank_Accounts': num_BA, 
+                          'Num_Credit_Card': num_CC, 'Interest_Rate': interest_rate, 'Num_of_Loan': num_loans, 'Type_of_Loan': loan_types, 
+                          'Num_of_Delayed_Payment': num_delayed_payments, 'Num_Credit_Inquiries': num_cred_inquires, 'Outstanding_Debt': debt, 
+                          'Credit_Utilization_Ratio': cred_util, 'Credit_History_Age': cred_age, 'Total_EMI_per_month': emi, 
+                          'Payment_Behaviour': payment_behavior, 'Monthly_Balance': monthly_balance}
+        
 def main():
     if 'data' not in st.session_state:
-        st.session_state.data = []
+        st.session_state.data = [{'Age': 0, 'Annual_Income': 0, 'Monthly_Inhand_Salary': 0, 'Num_Bank_Accounts': 0, 
+                                  'Num_Credit_Card': 0, 'Interest_Rate': 0, 'Num_of_Loan': 0, 'Type_of_Loan': 0, 
+                                 'Num_of_Delayed_Payment': 0, 'Num_Credit_Inquiries': 0, 'Outstanding_Debt': 0, 
+                                 'Credit_Utilization_Ratio': 0, 'Credit_History_Age': 0, 'Total_EMI_per_month': 0, 
+                                 'Payment_Behaviour': 0, 'Monthly_Balance': 0}]
+    
+
+    if 'input_index' not in st.session_state:
         st.session_state.input_index = 1
 
     # Include page styling and header removal  CSS files
@@ -102,7 +162,7 @@ def main():
         if st.button("Learn more"):
             learn_more()
 
-    st.session_state.data = credit_score_input(st.session_state.data, st.session_state.input_index)
+    credit_score_input(st.session_state.input_index)    
 
     #Updating the dataframe
     dataframe = pd.DataFrame(st.session_state.data)
