@@ -5,6 +5,7 @@ import pandas as pd
 import joblib
 import re
 
+# To run the app with auto reload:
 #streamlit run app.py --server.runOnSave true
 
 # Include CSS files
@@ -12,6 +13,7 @@ def include_css(filename):
     with open(filename, 'r') as f:
         st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
 
+#Information for the learn more section
 def learn_more():
     with st.sidebar:
         st.markdown("<center><h1> What could effect my credit score? </h1></center>", unsafe_allow_html=True)
@@ -23,27 +25,26 @@ def learn_more():
                  The more money you have left over, the greater your ability to pay back loans.")
         st.write("4. Number of Bank Accounts: The more bank accounts you have, the more credit history/activity you have generally speaking. \
                  While this is not as important as other factors, it can still have an impact on your credit score.")
+        st.write("5. Number of Credit Cards: Multiple credit cards suggests lower credit utilization rates, which can lead to a higher credit score, \
+                 so long as you paying them off")
+        st.write("6. Interest Rate: A higher interest rate can lead to higher monthly payments, which can lead to a lower credit score.")
+        st.write("7. Number of Loans: The more loans you have, the more debt you have, generally speaking. This can lead to a lower credit score.")
+        st.write("8. Type of Loan: Certain types of loans can have a negative impact on your credit score.  \
+                 For example, payday loans are known to have a negative impact on credit scores, but some loans can help build credit, like auto loans.") 
+        st.write("9. Number of Delayed Payments: Late payments can have a very negative impact on your credit score.")
+        st.write("10. Number of Credit Inquiries: Multiple credit inquiries can have a negative impact on your credit score as it can suggest financial instability.")
+        st.write("11. Outstanding Debt: The more debt you have, the lower your credit score.")
+        st.write("12. Credit Utilization Ratio: The higher your credit utilization ratio, the lower your credit score. This is because \
+                    it suggests you are using a large portion of your available credit and may be at risk of defaulting.")
+        st.write("13. Credit History Age: The longer your credit history, the more data credit bureaus have to calculate your credit score.")
+        st.write("14. Total EMI per month: EMI is a fixed payment amount that a borrower needs to pay to a lender at a specified date each month. \
+                 The more money you owe, the lower your credit score.")
+        st.write("15. Payment Behaviour: Your payment behaviour can have a significant impact on your credit score. The types of purchases you make \
+                 can suggest financial instability")
+        st.write("16. Monthly Balance: The amount of money you have left over after paying your bills is a good indicator of how much funds you have left over \
+                 to pay back a potential loan") 
         
-        ### Add more factors here
-        """"
-        Age                          True
-        Annual_Income                True
-        Monthly_Inhand_Salary        True
-        Num_Bank_Accounts            True
-        Num_Credit_Card              True
-        Interest_Rate                True
-        Num_of_Loan                  True
-        Type_of_Loan                False
-        Num_of_Delayed_Payment       True
-        Num_Credit_Inquiries         True
-        Outstanding_Debt             True
-        Credit_Utilization_Ratio     True
-        Credit_History_Age           True
-        Total_EMI_per_month          True
-        Payment_Behaviour           False
-        Monthly_Balance              True
-        Credit_Score                False  """
-
+#User input form
 def credit_score_input():
     #User Input with button 
     submit_button = None
@@ -55,11 +56,11 @@ def credit_score_input():
         
         st.write("\n")
         st.write("Annual Income: ")
-        annual_income = st.number_input("Enter your annual income", min_value=0, max_value=1000000, value=None)
+        annual_income = st.number_input("Enter your annual income", min_value=0, max_value=10000000, value=None)
         
         st.write("\n")
         st.write("Monthly Inhand Salary: ")
-        monthly_inhand_salary = st.number_input("Enter your monthly inhand salary", min_value=0, max_value=100000, value=None)
+        monthly_inhand_salary = st.number_input("Enter your monthly inhand salary", min_value=0, max_value=1000000, value=None)
         
         st.write("\n")
         st.write("Number of Bank Accounts: ")
@@ -67,7 +68,7 @@ def credit_score_input():
 
         st.write("\n")
         st.write("Number of Credit Cards: ")
-        num_CC = st.number_input("Enter the number of credit cards you have", min_value=0, max_value=10, value=None)
+        num_CC = st.number_input("Enter the number of credit cards you have", min_value=0, max_value=15, value=None)
         
         st.write("\n")
         st.write("Interest Rate: ") 
@@ -75,7 +76,7 @@ def credit_score_input():
         
         st.write("\n")
         st.write("Number of Loans: ")
-        num_loans = st.number_input("Enter the number of loans you have", min_value=0, max_value=10, value=None)
+        num_loans = st.number_input("Enter the number of loans you have", min_value=0, max_value=15, value=None)
         
         st.write("\n")
         st.write("Type of Loan: ")
@@ -86,11 +87,11 @@ def credit_score_input():
 
         st.write("\n")
         st.write("Number of Delayed Payments: ")
-        num_delayed_payments = st.number_input("Enter the number of delayed payments", min_value=0, max_value=10, value=None)
+        num_delayed_payments = st.number_input("Enter the number of delayed payments", min_value=0, max_value=20, value=None)
         
         st.write("\n")
         st.write("Number of Credit Inquiries: ")
-        num_cred_inquires = st.number_input("Enter the number of credit inquiries", min_value=0, max_value=10, value=None)
+        num_cred_inquires = st.number_input("Enter the number of credit inquiries", min_value=0, max_value=20, value=None)
         
         st.write("\n")
         st.write("Outstanding Debt: ")
@@ -115,12 +116,13 @@ def credit_score_input():
         
         st.write("\n")
         st.write("Monthly Balance: ")
-        monthly_balance = st.number_input("Enter the monthly balance", min_value=0, max_value=100000, value=None)
+        monthly_balance = st.number_input("Enter the monthly balance", min_value=0, max_value=1000000, value=None)
         
         st.write("\n")
         st.write("\n")
         submit_button = st.form_submit_button(label='Submit')
 
+    #Save user input to session state if submit button is pressed 
     if submit_button: 
         st.session_state.data[0] = {'Age': age, 'Annual_Income': annual_income, 'Monthly_Inhand_Salary': monthly_inhand_salary, 'Num_Bank_Accounts': num_BA, 
                           'Num_Credit_Card': num_CC, 'Interest_Rate': interest_rate, 'Num_of_Loan': num_loans, 'Type_of_Loan': loan_types, 
@@ -129,6 +131,7 @@ def credit_score_input():
                           'Payment_Behaviour': payment_behavior, 'Monthly_Balance': monthly_balance}
         
 
+#One Hot Encoding for the user input
 def oneHotEncode(dataset):
     #One Hot Encoding for Type of Loan
     dataset['Auto Loan'] = dataset['Type_of_Loan'].apply(lambda x: 1 if  re.search(r'Auto Loan', x) else 0)
@@ -149,20 +152,40 @@ def oneHotEncode(dataset):
     dataset['Low_spent_Medium_value_payments'] = dataset['Payment_Behaviour'].apply(lambda x: 1 if re.search(r'Low Spending and Medium Value Payments', x) else 0)
     dataset['Low_spent_Small_value_payments'] = dataset['Payment_Behaviour'].apply(lambda x: 1 if re.search(r'Low Spending and Small Value Payments', x) else 0)  
     dataset = dataset.drop(columns=['Payment_Behaviour'])
+
     return dataset
 
 def predict(dataset): 
     #Retrieve saved scaler from files     
     scaler = joblib.load("model/scaler.pkl")
+
+    #Scale the user input
     dataset = scaler.transform(dataset)
-    st.write("Scaled Data going into the model:")
-    st.write(dataset)
+
+    #Retrieve saved model from files
     model = joblib.load("model/mlp_model.pkl")
+    
+    #Make prediction
     prediction = model.predict(dataset)
-    st.write("Prediction from model: ")
-    st.write(prediction.toarray())
+
+    return prediction.toarray()
+
+#Display the results of the prediction
+def display_results(predictions):
+    st.image(".style/credit-score-ranges.png")
+    if str(predictions) == '[[1 0 0]]':
+        st.header("Estimated Credit Score: 740 - 830")
+    if str(predictions) == '[[1 1 0]]':
+        st.header("Estimated Credit Score: 740 - 680")
+    if str(predictions) == '[[0 1 0]]':
+        st.header("Estimated Credit Score: 680 - 630")
+    if str(predictions) == '[[0 1 1]]':
+        st.header("Estimated Credit Score: 630 - 570")
+    if str(predictions) == '[[0 0 1]]':
+        st.header("Estimated Credit Score: 630 - 400")
 
 def main():
+    #initialize session state to store user input
     if 'data' not in st.session_state:
         st.session_state.data = [{'Age': None, 'Annual_Income': None, 'Monthly_Inhand_Salary': None, 'Num_Bank_Accounts': None, 
                       'Num_Credit_Card': None, 'Interest_Rate': None, 'Num_of_Loan': None, 'Type_of_Loan': None, 
@@ -171,9 +194,10 @@ def main():
                      'Payment_Behaviour': None, 'Monthly_Balance': None}]
     
 
-    # Include page styling and header removal  CSS files
+    # Include header removal CSS files
     include_css('.style/header_remove.css')
-        # ******Main body of the page*****
+    
+# ******Main body of the page*****
 
     # Title of the page 
     title = "Credit Score Form"
@@ -185,30 +209,24 @@ def main():
     # Creating two columns layout
     col1, col2 = st.columns([2.8, 1])  
 
-    # Text in the left column
+    # Text along with learn more button 
     with col1:
         st.write("Understanding your credit score is a vital part of your financial well-being")
-
-    # Button in the right column
     with col2:
         if st.button("Learn more"):
             learn_more()
 
+    #User input form 
     credit_score_input()    
 
-    #Updating the dataframe
+    #Updating the dataframe after user input
     dataframe = pd.DataFrame(st.session_state.data)
 
+    #Begin model prediction if user input is valid 
     if not dataframe.isnull().values.any():
-        st.write("Before One Hot Encoding: ")
-        st.write(dataframe)
         dataframe = oneHotEncode(dataframe)
-        st.write("After One Hot Encoding: ")
-        st.write(dataframe)
-        predict(dataframe)
-     
-
-    
+        predictions = predict(dataframe)
+        display_results(predictions)    
 
 if __name__ == "__main__":
     main()
