@@ -2,7 +2,8 @@
 import streamlit as st
 from matplotlib import pyplot as plt
 import pandas as pd
-import subprocess
+import joblib
+import re
 
 #streamlit run app.py --server.runOnSave true
 
@@ -43,10 +44,9 @@ def learn_more():
         Monthly_Balance              True
         Credit_Score                False  """
 
-def credit_score_input(index):
+def credit_score_input():
     #User Input with button 
     submit_button = None
-    invalid = False
 
     with st.form(key='my_form'):
         st.write("Please enter the following information:")
@@ -80,7 +80,9 @@ def credit_score_input(index):
         st.write("\n")
         st.write("Type of Loan: ")
         options = 'Choose an Option', 'Student Loan', 'Equity Loan', 'Payday Loan', 'Personal Loan', 'Consolidation Loan', 'Mortgage Loan', 'Auto Loan', 'Builder Loan'
-        loan_types = st.multiselect("Select the type of loan you have, if applicable", options)
+        loan_types = st.multiselect("Select the type of loans you have, if applicable", options)
+        loan_types = ', '.join(loan_types)
+        st.write(loan_types)
 
         st.write("\n")
         st.write("Number of Delayed Payments: ")
@@ -100,7 +102,7 @@ def credit_score_input(index):
         
         st.write("\n")
         st.write("Credit History Age: ")
-        cred_age = st.number_input("Enter the credit history age", min_value=0, max_value=100, value=None)
+        cred_age = st.number_input("Enter the credit history age in months", min_value=0, value=None)
         
         st.write("\n")
         st.write("Total EMI per month: ")
@@ -108,7 +110,6 @@ def credit_score_input(index):
         
         st.write("\n")
         st.write("Payment Behaviour: ")
-
         payment_behavior = st.selectbox("Enter the payment behaviour that best fits you", ('High Spending and Large Value Payments', 'High Spending and Medium Value Payments', 
                 'High Spending and Small Value Payments', 'Low Spending and Large Value Payments', 'Low Spending and Medium Value Payments', 'Low Spending and Small Value Payments'))
         
@@ -127,23 +128,54 @@ def credit_score_input(index):
                           'Credit_Utilization_Ratio': cred_util, 'Credit_History_Age': cred_age, 'Total_EMI_per_month': emi, 
                           'Payment_Behaviour': payment_behavior, 'Monthly_Balance': monthly_balance}
         
+
+def oneHotEncode(dataset):
+    #One Hot Encoding for Type of Loan
+    dataset['Auto Loan'] = dataset['Type_of_Loan'].apply(lambda x: 1 if  re.search(r'Auto Loan', x) else 0)
+    dataset['Credit-Builder Loan'] = dataset['Type_of_Loan'].apply(lambda x: 1 if re.search(r'Credit-Builder Loan', x) else 0)
+    dataset['Personal Loan'] = dataset['Type_of_Loan'].apply(lambda x: 1 if re.search(r'Personal Loan', x) else 0)
+    dataset['Payday Loan'] = dataset['Type_of_Loan'].apply(lambda x: 1 if re.search(r'Payday Loan', x) else 0)
+    dataset['Student Loan'] = dataset['Type_of_Loan'].apply(lambda x: 1 if re.search(r'Student Loan', x) else 0)
+    dataset['Morgage Loan'] = dataset['Type_of_Loan'].apply(lambda x: 1 if re.search(r'Morgage Loan', x) else 0)
+    dataset['Home Equity Loan'] = dataset['Type_of_Loan'].apply(lambda x: 1 if re.search(r'Home Equity Loan', x) else 0)
+    dataset['Consolidation Loan'] = dataset['Type_of_Loan'].apply(lambda x: 1 if re.search(r'Consolidation Loan', x) else 0)
+    dataset = dataset.drop(columns=['Type_of_Loan'])
+
+    #One Hot Encoding for Payment Behaviour
+    dataset['High_spent_Large_value_payments'] = dataset['Payment_Behaviour'].apply(lambda x: 1 if  re.search(r'High Spending and Large Value Payments', x) else 0)
+    dataset['High_spent_Medium_value_payments'] = dataset['Payment_Behaviour'].apply(lambda x: 1 if re.search(r'High Spending and Medium Value Payments', x) else 0)
+    dataset['High_spent_Small_value_payments'] = dataset['Payment_Behaviour'].apply(lambda x: 1 if re.search(r'High Spending and Small Value Payments', x) else 0)
+    dataset['Low_spent_Large_value_payments'] = dataset['Payment_Behaviour'].apply(lambda x: 1 if  re.search(r'Low Spending and Large Value Payments', x) else 0)
+    dataset['Low_spent_Medium_value_payments'] = dataset['Payment_Behaviour'].apply(lambda x: 1 if re.search(r'Low Spending and Medium Value Payments', x) else 0)
+    dataset['Low_spent_Small_value_payments'] = dataset['Payment_Behaviour'].apply(lambda x: 1 if re.search(r'Low Spending and Small Value Payments', x) else 0)  
+    dataset = dataset.drop(columns=['Payment_Behaviour'])
+    return dataset
+
+def predict(dataset): 
+    #Retrieve saved scaler from files     
+    scaler = joblib.load("model/scaler.pkl")
+    dataset = scaler.transform(dataset)
+    st.write("Scaled Data going into the model:")
+    st.write(dataset)
+    model = joblib.load("model/mlp_model.pkl")
+    prediction = model.predict(dataset)
+    st.write("Prediction from model: ")
+    st.write(prediction.toarray())
+
 def main():
     if 'data' not in st.session_state:
-        st.session_state.data = [{'Age': 0, 'Annual_Income': 0, 'Monthly_Inhand_Salary': 0, 'Num_Bank_Accounts': 0, 
-                                  'Num_Credit_Card': 0, 'Interest_Rate': 0, 'Num_of_Loan': 0, 'Type_of_Loan': 0, 
-                                 'Num_of_Delayed_Payment': 0, 'Num_Credit_Inquiries': 0, 'Outstanding_Debt': 0, 
-                                 'Credit_Utilization_Ratio': 0, 'Credit_History_Age': 0, 'Total_EMI_per_month': 0, 
-                                 'Payment_Behaviour': 0, 'Monthly_Balance': 0}]
+        st.session_state.data = [{'Age': None, 'Annual_Income': None, 'Monthly_Inhand_Salary': None, 'Num_Bank_Accounts': None, 
+                      'Num_Credit_Card': None, 'Interest_Rate': None, 'Num_of_Loan': None, 'Type_of_Loan': None, 
+                     'Num_of_Delayed_Payment': None, 'Num_Credit_Inquiries': None, 'Outstanding_Debt': None, 
+                     'Credit_Utilization_Ratio': None, 'Credit_History_Age': None, 'Total_EMI_per_month': None, 
+                     'Payment_Behaviour': None, 'Monthly_Balance': None}]
     
 
-    if 'input_index' not in st.session_state:
-        st.session_state.input_index = 1
-
     # Include page styling and header removal  CSS files
-    include_css('../src/.style/header_remove.css')
+    include_css('.style/header_remove.css')
         # ******Main body of the page*****
 
-    # Title of the page
+    # Title of the page 
     title = "Credit Score Form"
     st.markdown(f"<center><h1>{title}</h1></center>", unsafe_allow_html=True)
     st.write("\n")
@@ -162,14 +194,19 @@ def main():
         if st.button("Learn more"):
             learn_more()
 
-    credit_score_input(st.session_state.input_index)    
+    credit_score_input()    
 
     #Updating the dataframe
     dataframe = pd.DataFrame(st.session_state.data)
 
-    #Displaying the current dataframe 
-    if not dataframe.empty:
+    if not dataframe.isnull().values.any():
+        st.write("Before One Hot Encoding: ")
         st.write(dataframe)
+        dataframe = oneHotEncode(dataframe)
+        st.write("After One Hot Encoding: ")
+        st.write(dataframe)
+        predict(dataframe)
+     
 
     
 
