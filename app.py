@@ -175,14 +175,17 @@ def display_results(predictions):
     st.image(".style/credit-score-ranges.png")
     if str(predictions) == '[[1 0 0]]':
         st.header("Estimated Credit Score: 740 - 830")
-    if str(predictions) == '[[1 1 0]]':
-        st.header("Estimated Credit Score: 740 - 680")
-    if str(predictions) == '[[0 1 0]]':
-        st.header("Estimated Credit Score: 680 - 630")
-    if str(predictions) == '[[0 1 1]]':
-        st.header("Estimated Credit Score: 630 - 570")
-    if str(predictions) == '[[0 0 1]]':
-        st.header("Estimated Credit Score: 630 - 400")
+    elif str(predictions) == '[[1 1 0]]':
+        st.header("Estimated Credit Score: 680 - 740")
+    elif str(predictions) == '[[0 1 0]]':
+        st.header("Estimated Credit Score: 630 - 680")
+    elif str(predictions) == '[[0 1 1]]':
+        st.header("Estimated Credit Score: 570 - 630")
+    elif str(predictions) == '[[0 0 1]]':
+        st.header("Estimated Credit Score: 400 - 600")
+    else:
+        st.header("We are not able to estimate your credit score")
+        st.write(str(predictions))
 
 def main():
     #initialize session state to store user input
